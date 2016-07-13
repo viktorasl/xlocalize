@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["viktoras.laukevicius@yahoo.com"]
 
   spec.homepage      = "https://github.com/viktorasl"
-  spec.summary       = "Xcode localizations import/export helper tool"
+  spec.summary       = Xlocalise::DESCRIPTION
   spec.license       = "MIT"
 
   spec.required_ruby_version = ">= 2.0.0"
