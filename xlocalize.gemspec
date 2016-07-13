@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Viktoras Laukevičius"]
   spec.email         = ["viktoras.laukevicius@yahoo.com"]
 
-  spec.homepage      = "https://github.com/viktorasl"
+  spec.homepage      = "https://github.com/viktorasl/xlocalize"
   spec.summary       = Xlocalize::DESCRIPTION
   spec.license       = "MIT"
 
