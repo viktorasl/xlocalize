@@ -1,4 +1,5 @@
 require 'xlocalise/version'
+require 'xlocalise/executor'
 require 'commander'
 
 module Xlocalise
@@ -8,7 +9,8 @@ module Xlocalise
     def global_opts_valid(global_opts)
       if global_opts[:project].nil? or
          global_opts[:target].nil? or
-         global_opts[:excl_prefix].nil?
+         global_opts[:excl_prefix].nil? or
+         global_opts[:master_lang].nil?
         return false
       else
         return true
@@ -25,6 +27,7 @@ module Xlocalise
       global_option('--project PROJECT', '-p', 'Path to project file'){ |project| global_opts[:project] = project }
       global_option('--target TARGET', '-t', 'Target in the project'){ |target| global_opts[:target] = target }
       global_option('--excl_prefix EXCL_PREFIX', '-e', 'Exclude strings having specified prefix'){ |excl_prefix| global_opts[:excl_prefix] = excl_prefix }
+      global_option('--master_lang MASTER_LANG', '-m', 'Master language of the project'){ |master_lang| global_opts[:master_lang] = master_lang }
 
       command :export do |c|
         c.syntax = 'xlocalise export [options]'
@@ -32,7 +35,12 @@ module Xlocalise
         c.option '--locales ARRAY', Array, 'Exports localised strings from Xcode project for given locales'
         c.action do |args, options|
           if global_opts_valid(global_opts)
-            puts 'Export'
+            xlc = Executor.new(global_opts[:project], global_opts[:target], global_opts[:excl_prefix], global_opts[:master_lang])
+            if options.locales.nil?
+              xlc.export_master
+            else
+              xlc.export(options.locales)
+            end
           else
             puts 'Missing definitions of global options'
           end
