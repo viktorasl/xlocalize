@@ -1,20 +1,20 @@
-require 'xlocalise/version'
-require 'xlocalise/executor'
-require 'xlocalise/webtranslateit'
+require 'xlocalize/version'
+require 'xlocalize/executor'
+require 'xlocalize/webtranslateit'
 require 'commander'
 
-module Xlocalise
-  class XlocaliseCLI
+module Xlocalize
+  class XlocalizeCLI
     include Commander::Methods
 
     def run
-      program :name, 'Xlocalise'
-      program :version, Xlocalise::VERSION
-      program :description, Xlocalise::DESCRIPTION
+      program :name, 'Xlocalize'
+      program :version, Xlocalize::VERSION
+      program :description, Xlocalize::DESCRIPTION
 
       command :export do |c|
-        c.syntax = 'xlocalise export [options]'
-        c.description = 'Export localised strings from Xcode project'
+        c.syntax = 'xlocalize export [options]'
+        c.description = 'Export localized strings from Xcode project'
         c.option '--wti_key STRING', String, 'Webtranslateit API key'
         c.option '--project STRING', String, 'Path to project file'
         c.option '--target STRING', String, 'Target in the project'
@@ -34,7 +34,7 @@ module Xlocalise
       end
 
       command :download do |c|
-        c.syntax = 'xlocalise download [options]'
+        c.syntax = 'xlocalize download [options]'
         c.description = 'Download localized strings from WebtranslateIt project'
         c.option '--wti_key STRING', String, 'Webtranslateit API key'
         c.option '--locales ARRAY', Array, 'Locales to download'
@@ -49,8 +49,8 @@ module Xlocalise
       end
 
       command :import do |c|
-        c.syntax = 'xlocalise import [options]'
-        c.description = 'Import localised strings to Xcode project'
+        c.syntax = 'xlocalize import [options]'
+        c.description = 'Import localized strings to Xcode project'
         c.option '--locales ARRAY', Array, 'Locales to import'
         c.action do |args, options|
           if options.locales.nil?

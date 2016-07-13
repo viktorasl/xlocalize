@@ -1,8 +1,8 @@
-require 'xlocalise/webtranslateit'
+require 'xlocalize/webtranslateit'
 require 'colorize'
 require 'nokogiri'
 
-module Xlocalise
+module Xlocalize
   class Executor
 
     def locale_file_name(locale)
@@ -54,7 +54,7 @@ module Xlocalise
     def download(wti, locales)
       begin
         locales.each do |locale|
-          puts "Downloading localised file for #{locale} translation"
+          puts "Downloading localized file for #{locale} translation"
           File.open("#{locale}.xliff", "w") {|file|
             wti.pull(file, locale)
             puts "Done.".green

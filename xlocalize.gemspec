@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'xlocalise/version'
+require 'xlocalize/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "xlocalise"
-  spec.version       = Xlocalise::VERSION
-  spec.authors       = ["viktoras"]
+  spec.name          = "xlocalize"
+  spec.version       = Xlocalize::VERSION
+  spec.authors       = ["Viktoras Laukevičius"]
   spec.email         = ["viktoras.laukevicius@yahoo.com"]
 
   spec.homepage      = "https://github.com/viktorasl"
-  spec.summary       = Xlocalise::DESCRIPTION
+  spec.summary       = Xlocalize::DESCRIPTION
   spec.license       = "MIT"
 
   spec.required_ruby_version = ">= 2.0.0"

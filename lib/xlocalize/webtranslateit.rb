@@ -2,7 +2,7 @@ require 'net/http'
 require 'net/http/post/multipart'
 require 'json'
 
-module Xlocalise
+module Xlocalize
   class WebtranslateIt
 
     attr_reader :http

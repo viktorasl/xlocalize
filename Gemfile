@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in xlocalise.gemspec
+# Specify your gem's dependencies in xlocalize.gemspec
 gemspec
