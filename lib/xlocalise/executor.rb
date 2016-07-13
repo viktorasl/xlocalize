@@ -1,10 +1,15 @@
+require 'xlocalise/webtranslateit'
+require 'colorize'
 require 'nokogiri'
 
 module Xlocalise
   class Executor
     attr_reader :project, :taget, :master_lang, :excl_prefix
+    attr_reader :wti
 
-		def initialize(project, target, excl_prefix, master_lang)
+		def initialize(wti, project, target, excl_prefix, master_lang)
+      @wti = wti
+
 			@project = project
 			@target = target
 			@excl_prefix = excl_prefix
@@ -20,6 +25,17 @@ module Xlocalise
 			
 			system "xcodebuild -exportLocalizations -localizationPath ./ -project #{@project}"
 			purelyze(master_file_name)
+
+      # Pushing master file to WebtranslateIt
+      begin
+        puts "Uploading master file to WebtranslateIt"
+        File.open(master_file_name, "r") {|file|
+          @wti.push_master(file)
+          puts "Done.".green
+        }
+      rescue => err
+        puts err.to_s.red
+      end if !@wti.nil?
 		end
 
 		def purelyze(locale_file_name)

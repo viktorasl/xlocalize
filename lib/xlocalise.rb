@@ -1,5 +1,6 @@
 require 'xlocalise/version'
 require 'xlocalise/executor'
+require 'xlocalise/webtranslateit'
 require 'commander'
 
 module Xlocalise
@@ -23,7 +24,9 @@ module Xlocalise
       program :description, Xlocalise::DESCRIPTION
 
       global_opts = {}
+      wti = nil
 
+      global_option('--wti_key KEY', '-w', 'Webtranslateit API key'){ |key| wti = WebtranslateIt.new(key) }
       global_option('--project PROJECT', '-p', 'Path to project file'){ |project| global_opts[:project] = project }
       global_option('--target TARGET', '-t', 'Target in the project'){ |target| global_opts[:target] = target }
       global_option('--excl_prefix EXCL_PREFIX', '-e', 'Exclude strings having specified prefix'){ |excl_prefix| global_opts[:excl_prefix] = excl_prefix }
@@ -32,15 +35,10 @@ module Xlocalise
       command :export do |c|
         c.syntax = 'xlocalise export [options]'
         c.description = 'Export localised strings from Xcode project'
-        c.option '--locales ARRAY', Array, 'Exports localised strings from Xcode project for given locales'
         c.action do |args, options|
           if global_opts_valid(global_opts)
-            xlc = Executor.new(global_opts[:project], global_opts[:target], global_opts[:excl_prefix], global_opts[:master_lang])
-            if options.locales.nil?
-              xlc.export_master
-            else
-              xlc.export(options.locales)
-            end
+            xlc = Executor.new(wti, global_opts[:project], global_opts[:target], global_opts[:excl_prefix], global_opts[:master_lang])
+            xlc.export_master
           else
             puts 'Missing definitions of global options'
           end
@@ -65,3 +63,5 @@ module Xlocalise
     end
   end
 end
+
+Xlocalise::XlocaliseCLI.new.run if __FILE__ == $0
