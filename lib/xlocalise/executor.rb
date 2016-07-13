@@ -64,5 +64,41 @@ module Xlocalise
         puts err.to_s.red
       end
     end
+
+    def import(locales)
+      locales.each do |locale|
+        doc = Nokogiri::XML(open("#{locale}.xliff"))
+
+        doc.xpath("//xmlns:file").each { |node|
+          file_name = node["original"]
+          parts = file_name.split('/')
+          name = ""
+          parts.each_with_index {|part, idx|
+            name += "/" if idx > 0
+            if part.end_with?(".lproj")
+              name += "#{locale}.lproj"
+            elsif idx+1 == parts.count
+              # TODO: join all parts till the last '.'
+              name += "#{part.split('.')[0]}.strings"
+            else
+              name += part
+            end
+          }
+          
+          File.open(name, "w") {|file|
+            (node > "body > trans-unit").each {|trans_unit|
+              key = trans_unit["id"]
+              target = (trans_unit > "target").text
+              note = (trans_unit > "note").text
+              note = "(No Commment)" if note.length <= 0
+              
+              file.write "/* #{note} */\n"
+              file.write "\"#{key}\" = #{target.inspect};\n\n"
+            }
+          }
+
+        }
+      end
+    end
   end
 end

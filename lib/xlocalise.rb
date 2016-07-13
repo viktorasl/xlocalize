@@ -48,6 +48,19 @@ module Xlocalise
         end
       end
 
+      command :import do |c|
+        c.syntax = 'xlocalise import [options]'
+        c.description = 'Import localised strings to Xcode project'
+        c.option '--locales ARRAY', Array, 'Locales to import'
+        c.action do |args, options|
+          if options.locales.nil?
+            raise 'Missing parameter'
+          end
+
+          Executor.new.import(options.locales)
+        end
+      end
+
       run!
     end
   end
