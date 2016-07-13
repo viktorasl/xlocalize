@@ -29,7 +29,22 @@ module Xlocalise
           end
 
           wti = WebtranslateIt.new(options.wti_key) if !options.wti_key.nil?
-          xlc = Executor.new.export_master(wti, options.project, options.target, options.excl_prefix, options.master_lang)
+          Executor.new.export_master(wti, options.project, options.target, options.excl_prefix, options.master_lang)
+        end
+      end
+
+      command :download do |c|
+        c.syntax = 'xlocalise download [options]'
+        c.description = 'Download localized strings from WebtranslateIt project'
+        c.option '--wti_key STRING', String, 'Webtranslateit API key'
+        c.option '--locales ARRAY', Array, 'Locales to download'
+        c.action do |args, options|
+          if options.wti_key.nil? or
+             options.locales.nil?
+            raise 'Missing parameter'
+          end
+
+          Executor.new.download(WebtranslateIt.new(options.wti_key), options.locales)
         end
       end
 

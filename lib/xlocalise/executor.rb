@@ -50,5 +50,19 @@ module Xlocalise
 			puts "Writing modified XLIFF file to #{locale_file_name}"
 			File.open(locale_file_name, "w") {|file| file.write(doc.to_xml) }
 		end
+
+    def download(wti, locales)
+      begin
+        locales.each do |locale|
+          puts "Downloading localised file for #{locale} translation"
+          File.open("#{locale}.xliff", "w") {|file|
+            wti.pull(file, locale)
+            puts "Done.".green
+          }
+        end
+      rescue => err
+        puts err.to_s.red
+      end
+    end
   end
 end
