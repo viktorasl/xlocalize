@@ -1,5 +1,9 @@
 require "xlocalise/version"
 
 module Xlocalise
-  # Your code goes here...
+  class Xlocalise
+    def self.proxy_commands
+      puts "Testing Xlocalise executable"
+    end
+  end
 end
