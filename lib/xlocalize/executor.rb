@@ -59,11 +59,11 @@ module Xlocalize
       doc.xpath("//xmlns:file").each { |node|
         fname = node["original"]
         next if !fname.end_with?(".strings")
-        fname_stringsdict = Pathname.new(project).split.first.to_s  << '/' << fname << "dict"
-        next if !File.exist?(fname_stringsdict)
+        fname_stringsdict = fname << 'dict'
+        file_full_path = Pathname.new(project).split.first.to_s  << '/' << fname_stringsdict
+        next if !File.exist?(file_full_path)
 
-        plurals[fname_stringsdict] = {}
-        Plist::parse_xml(fname_stringsdict).each do |key, val|
+        Plist::parse_xml(file_full_path).each do |key, val|
           values = val["value"]
           plurals[fname_stringsdict] = values.select { |k, v| ['zero', 'one', 'few', 'other'].include?(k) }
           node.css('body > trans-unit#' << key).remove
