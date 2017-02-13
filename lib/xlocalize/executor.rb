@@ -3,6 +3,7 @@ require 'colorize'
 require 'nokogiri'
 require 'plist'
 require 'yaml'
+require 'pathname'
 
 module Xlocalize
   class Executor
@@ -14,8 +15,17 @@ module Xlocalize
     def export_master(wti, project, target, excl_prefix, master_lang)
       master_file_name = locale_file_name(master_lang)
       
-      system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project}"
-      purelyze(master_file_name, target, excl_prefix)
+      # hacky way to finish xcodebuild -exportLocalizations script, because
+      # since Xcode7.3 & OS X Sierra script hangs even though it produces
+      # xliff output
+      # http://www.openradar.me/25857436
+      File.delete(master_file_name) if File.exist?(master_file_name)
+      system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project} & sleep 0"
+      while !File.exist?(master_file_name) do
+        sleep(1)
+      end
+
+      purelyze(master_file_name, target, excl_prefix, project)
 
       # Pushing master file to WebtranslateIt
       begin
@@ -29,7 +39,7 @@ module Xlocalize
       end if !wti.nil?
     end
 
-    def purelyze(locale_file_name, target, excl_prefix)
+    def purelyze(locale_file_name, target, excl_prefix, project)
       target_prefix = "#{target}/"
       doc = Nokogiri::XML(open(locale_file_name))
 
@@ -49,7 +59,7 @@ module Xlocalize
       doc.xpath("//xmlns:file").each { |node|
         fname = node["original"]
         next if !fname.end_with?(".strings")
-        fname_stringsdict = fname << "dict"
+        fname_stringsdict = Pathname.new(project).split.first.to_s  << '/' << fname << "dict"
         next if !File.exist?(fname_stringsdict)
 
         plurals[fname_stringsdict] = {}
