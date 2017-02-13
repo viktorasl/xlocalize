@@ -1,6 +1,8 @@
 require 'xlocalize/webtranslateit'
 require 'colorize'
 require 'nokogiri'
+require 'plist'
+require 'yaml'
 
 module Xlocalize
   class Executor
@@ -42,13 +44,32 @@ module Xlocalize
         node.parent.remove if node.content.start_with?(excl_prefix)
       }
 
+      puts "Filtering plurals"
+      plurals = {}
+      doc.xpath("//xmlns:file").each { |node|
+        fname = node["original"]
+        next if !fname.end_with?(".strings")
+        fname_stringsdict = fname << "dict"
+        next if !File.exist?(fname_stringsdict)
+
+        plurals[fname_stringsdict] = {}
+        Plist::parse_xml(fname_stringsdict).each do |key, val|
+          values = val["value"]
+          plurals[fname_stringsdict] = values.select { |k, v| ['zero', 'one', 'few', 'other'].include?(k) }
+          node.css('body > trans-unit#' << key).remove
+        end
+      }
+
       puts "Removing all files having no trans-unit elements after removal"
       doc.xpath("//xmlns:body").each { |node|
         node.parent.remove if node.elements.count == 0
       }
 
       puts "Writing modified XLIFF file to #{locale_file_name}"
-      File.open(locale_file_name, "w") {|file| file.write(doc.to_xml) }
+      File.open(locale_file_name, 'w') { |f| f.write(doc.to_xml) }
+
+      puts "Writing plurals to plurals YAML file"
+      File.open(locale_file_name << '_plurals.yml', 'w') { |f| f.write(plurals.to_yaml) }
     end
 
     def download(wti, locales)
