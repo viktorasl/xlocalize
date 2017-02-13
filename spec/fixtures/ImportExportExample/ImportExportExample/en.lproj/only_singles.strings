@@ -1,0 +1,10 @@
+/* 
+  only_singles.strings
+  ImportExportExample
+
+  Created by Viktoras Laukevičius on 13/02/2017.
+  Copyright © 2017 Xlocalize. All rights reserved.
+*/
+
+/* Only single comment */
+"only_single" = "Only single";
