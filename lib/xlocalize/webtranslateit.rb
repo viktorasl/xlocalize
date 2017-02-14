@@ -43,6 +43,26 @@ module Xlocalize
           raise JSON.parse(res.body)["error"]
         end
       }
+
+      if @plurals_file_id.nil?
+        # /api/projects/:project_token/files [POST]
+        request = Net::HTTP::Put::Multipart.new("/api/projects/#{@key}/files", {
+          "file" => UploadIO.new(file, "text/plain", plurals_file.path),
+          "name" => "plurals.yaml",
+          "low_priority" => false
+        })
+        @http.request(request)
+      else
+        # /api/projects/:project_token/files/:master_project_file_id/locales/:locale_code [PUT]
+        request = Net::HTTP::Post::Multipart.new("/api/projects/#{@key}/files/#{@plurals_file_id}/locales/#{@source_locale}", {
+          "file" => UploadIO.new(plurals_file, "text/plain", plurals_file.path),
+          "merge" => !override,
+          "ignore_missing" => true,
+          "label" => "",
+          "low_priority" => false
+        })
+        @http.request(request)
+      end
     end
 
     def pull(file, locale)
