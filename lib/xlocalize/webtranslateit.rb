@@ -76,11 +76,19 @@ module Xlocalize
       end
     end
 
-    def pull(file, locale)
+    def pull(locale)
       # downloading master xliff file
-      http.request(Net::HTTP::Get.new("/api/projects/#{@key}/files/#{@xliff_file_id}/locales/#{locale}")) {|response|
-        file.write(response.body)
-      }
+      data = {}
+      res = http.request(Net::HTTP::Get.new("/api/projects/#{@key}/files/#{@xliff_file_id}/locales/#{locale}"))
+      raise JSON.parse(res.body)["error"] if !res.code.to_i.between?(200, 300)
+      data['xliff'] = res.body
+      # downloading master plurals file
+      if !@plurals_file_id.nil?
+        res = http.request(Net::HTTP::Get.new("/api/projects/#{@key}/files/#{@plurals_file_id}/locales/#{locale}"))
+        raise JSON.parse(res.body)["error"] if !res.code.to_i.between?(200, 300)
+        data['plurals'] = res.body
+      end
+      return data
     end
 
   end

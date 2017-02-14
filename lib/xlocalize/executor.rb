@@ -96,11 +96,20 @@ module Xlocalize
     def download(wti, locales)
       begin
         locales.each do |locale|
-          puts "Downloading localized file for #{locale} translation"
+          puts "Downloading translations for #{locale}"
+          translations = wti.pull(locale)
+
           File.open("#{locale}.xliff", "w") {|file|
-            wti.pull(file, locale)
-            puts "Done.".green
+            file.write(translations['xliff'])
+            puts "Done saving xliff.".green
           }
+
+          if !translations['plurals'].nil?
+            File.open("#{locale}_plurals.yaml", "w") {|file|
+              file.write(translations['plurals'])
+              puts "Done saving plurals.".green
+            }
+          end
         end
       rescue => err
         puts err.to_s.red
