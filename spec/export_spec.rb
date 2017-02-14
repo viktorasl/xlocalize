@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'fileutils'
+require 'nokogiri'
 
 class WebtranslateItMock
 	attr_reader :push_xliff_file
@@ -33,21 +34,17 @@ describe Xlocalize::Executor do
 		end
 
 		it 'should pass correct xliff file for upload' do
-			begin
-				f = File.open('en.xliff', 'r')
-				expect(wti.push_xliff_file.path).to eq(f.path)
-			ensure
-				f.close unless f.nil?
-			end
+			expect(wti.push_xliff_file.path).to eq(File.open('en.xliff', 'r') { |f| f.path })
 		end
 
 		it 'should pass correct plurals file for upload' do
-			begin
-				f = File.open('en.xliff_plurals.yml', 'r')
-				expect(wti.push_plurals_file.path).to eq(f.path)
-			ensure
-				f.close unless f.nil?
-			end
+			expect(wti.push_plurals_file.path).to eq(File.open('en.xliff_plurals.yml', 'r') { |f| f.path })
+		end
+
+		it 'should have plurals filtered from xliff file' do
+			doc = Nokogiri::XML(open("en.xliff"))
+			trans_units = doc.xpath("//xmlns:trans-unit").map { |node| node['id'] }
+			expect(trans_units.include? 'users_count').to eq(false)
 		end
 	end
 end
