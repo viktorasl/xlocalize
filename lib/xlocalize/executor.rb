@@ -8,6 +8,10 @@ require 'pathname'
 module Xlocalize
   class Executor
 
+    def plurals_file_name(locale)
+      return locale_file_name(locale) << '_plurals.yml'
+    end
+
     def locale_file_name(locale)
       return "#{locale}.xliff"
     end
@@ -30,12 +34,14 @@ module Xlocalize
       # Pushing master file to WebtranslateIt
       begin
         puts "Uploading master file to WebtranslateIt"
-        File.open(master_file_name, "r") {|file|
-          wti.push_master(file)
-          puts "Done.".green
-        }
+        file = File.open(master_file_name, 'r')
+        plurals_file = File.open(plurals_file_name(master_lang), 'r')
+        wti.push_master(file, plurals_file)
+        puts "Done.".green
       rescue => err
         puts err.to_s.red
+      ensure
+        file.close unless file.nil?
       end if !wti.nil?
     end
 
@@ -81,7 +87,7 @@ module Xlocalize
 
       if !plurals.empty?
         puts "Writing plurals to plurals YAML file"
-        File.open(locale_file_name << '_plurals.yml', 'w') { |f| f.write({locale => plurals}.to_yaml) }
+        File.open(plurals_file_name(locale), 'w') { |f| f.write({locale => plurals}.to_yaml) }
       end
     end
 
