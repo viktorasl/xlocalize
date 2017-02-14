@@ -74,7 +74,8 @@ module Xlocalize
           values = val["value"]
           transl = values.select { |k, v| ['zero', 'one', 'few', 'other'].include?(k) }
           plurals[fname_stringsdict] = {key => transl}
-          node.css('body > trans-unit#' << key).remove
+          sel = 'body > trans-unit[id="' << key << '"]'
+          node.css(sel).remove
         end
       }
 
