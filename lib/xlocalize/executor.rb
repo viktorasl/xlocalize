@@ -116,39 +116,65 @@ module Xlocalize
       end
     end
 
+    def import_xliff(locale)
+      doc = Nokogiri::XML(open("#{locale}.xliff"))
+
+      doc.xpath("//xmlns:file").each do |node|
+        file_name = node["original"]
+        parts = file_name.split('/')
+        name = ""
+        parts.each_with_index do |part, idx|
+          name += "/" if idx > 0
+          if part.end_with?(".lproj")
+            name += "#{locale}.lproj"
+          elsif idx+1 == parts.count
+            # TODO: join all parts till the last '.'
+            name += "#{part.split('.')[0]}.strings"
+          else
+            name += part
+          end
+        end
+        
+        File.open(name, "w") do |file|
+          (node > "body > trans-unit").each do |trans_unit|
+            key = trans_unit["id"]
+            target = (trans_unit > "target").text
+            note = (trans_unit > "note").text
+            note = "(No Commment)" if note.length <= 0
+            
+            file.write "/* #{note} */\n"
+            file.write "\"#{key}\" = #{target.inspect};\n\n"
+          end
+        end
+
+      end
+    end
+
+    def import_plurals_if_needed(locale)
+      plurals_fname = "#{locale}_plurals.yaml"
+      return if !File.exist?(plurals_fname)
+      plurals_yml = YAML.load_file(plurals_fname)
+      plurals_yml[locale].each do |fname, trans_units|
+        content = {}
+        trans_units.each do |key, vals|
+          content[key] = {
+            "NSStringLocalizedFormatKey" => "%\#@value@",
+            "value" => vals.merge({
+              "NSStringFormatSpecTypeKey" => "NSStringPluralRuleType",
+              "NSStringFormatValueTypeKey" => "d"
+            })
+          }
+        end
+        File.open(fname, 'w') { |f| f.write content.to_plist }
+      end
+    end
+
     def import(locales)
+      puts 'Importing translations'
       locales.each do |locale|
-        doc = Nokogiri::XML(open("#{locale}.xliff"))
-
-        doc.xpath("//xmlns:file").each { |node|
-          file_name = node["original"]
-          parts = file_name.split('/')
-          name = ""
-          parts.each_with_index {|part, idx|
-            name += "/" if idx > 0
-            if part.end_with?(".lproj")
-              name += "#{locale}.lproj"
-            elsif idx+1 == parts.count
-              # TODO: join all parts till the last '.'
-              name += "#{part.split('.')[0]}.strings"
-            else
-              name += part
-            end
-          }
-          
-          File.open(name, "w") {|file|
-            (node > "body > trans-unit").each {|trans_unit|
-              key = trans_unit["id"]
-              target = (trans_unit > "target").text
-              note = (trans_unit > "note").text
-              note = "(No Commment)" if note.length <= 0
-              
-              file.write "/* #{note} */\n"
-              file.write "\"#{key}\" = #{target.inspect};\n\n"
-            }
-          }
-
-        }
+        import_xliff(locale)
+        import_plurals_if_needed(locale)
+        puts "Done #{locale}".green
       end
     end
   end
