@@ -7,9 +7,11 @@ describe Xlocalize::Executor do
 		it 'should create a YAML file for plurals in project' do
 			plurals_yml = YAML.load_file('en.xliff_plurals.yml')
 			expected_yml = {
-				'ImportExportExample/en.lproj/and_plurals.stringsdict' => {
-					'one' => '%d user',
-					'other' => '%d users'
+				'en' => {
+					'ImportExportExample/en.lproj/and_plurals.stringsdict' => {
+						'one' => '%d user',
+						'other' => '%d users'
+					}
 				}
 			}
 			expect(plurals_yml.to_a).to eq(expected_yml.to_a)

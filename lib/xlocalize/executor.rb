@@ -25,7 +25,7 @@ module Xlocalize
         sleep(1)
       end
 
-      purelyze(master_file_name, target, excl_prefix, project)
+      purelyze(master_lang, target, excl_prefix, project)
 
       # Pushing master file to WebtranslateIt
       begin
@@ -39,7 +39,8 @@ module Xlocalize
       end if !wti.nil?
     end
 
-    def purelyze(locale_file_name, target, excl_prefix, project)
+    def purelyze(locale, target, excl_prefix, project)
+      locale_file_name = locale_file_name(locale)
       target_prefix = "#{target}/"
       doc = Nokogiri::XML(open(locale_file_name))
 
@@ -78,8 +79,10 @@ module Xlocalize
       puts "Writing modified XLIFF file to #{locale_file_name}"
       File.open(locale_file_name, 'w') { |f| f.write(doc.to_xml) }
 
-      puts "Writing plurals to plurals YAML file"
-      File.open(locale_file_name << '_plurals.yml', 'w') { |f| f.write(plurals.to_yaml) }
+      if !plurals.empty?
+        puts "Writing plurals to plurals YAML file"
+        File.open(locale_file_name << '_plurals.yml', 'w') { |f| f.write({locale => plurals}.to_yaml) }
+      end
     end
 
     def download(wti, locales)
