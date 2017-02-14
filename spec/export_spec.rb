@@ -22,8 +22,10 @@ describe Xlocalize::Executor do
 			expected_yml = {
 				'en' => {
 					'ImportExportExample/en.lproj/and_plurals.stringsdict' => {
-						'one' => '%d user',
-						'other' => '%d users'
+						'users_count' => {
+							'one' => '%d user',
+							'other' => '%d users'
+						}
 					}
 				}
 			}

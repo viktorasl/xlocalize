@@ -72,7 +72,8 @@ module Xlocalize
 
         Plist::parse_xml(file_full_path).each do |key, val|
           values = val["value"]
-          plurals[fname_stringsdict] = values.select { |k, v| ['zero', 'one', 'few', 'other'].include?(k) }
+          transl = values.select { |k, v| ['zero', 'one', 'few', 'other'].include?(k) }
+          plurals[fname_stringsdict] = {key => transl}
           node.css('body > trans-unit#' << key).remove
         end
       }
