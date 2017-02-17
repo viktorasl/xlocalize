@@ -5,6 +5,8 @@ rvm:
   - jruby
 git:
   depth: 1
+before_install:
+  - gem install bundler
 install:
   - bundle install
 script:
