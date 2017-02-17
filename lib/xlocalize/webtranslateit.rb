@@ -29,22 +29,7 @@ module Xlocalize
       }
     end
 
-    def push_master(file, plurals_file, override = true)
-      puts 'Updating xliff file'
-      # uploding master xliff file
-      request = Net::HTTP::Put::Multipart.new("/api/projects/#{@key}/files/#{@xliff_file_id}/locales/#{@source_locale}", {
-        "file" => UploadIO.new(file, "text/plain", file.path),
-        "merge" => !override,
-        "ignore_missing" => true,
-        "label" => "",
-        "low_priority" => false })
-
-      @http.request(request) {|res|
-        if !res.code.to_i.between?(200, 300)
-          raise JSON.parse(res.body)["error"]
-        end
-      }
-
+    def push_master_plurals(plurals_file, override = true)
       if @plurals_file_id.nil?
         puts 'Creating plurals file'
         # /api/projects/:project_token/files [POST]
@@ -74,6 +59,25 @@ module Xlocalize
           end
         }
       end
+    end
+
+    def push_master(file, plurals_file, override = true)
+      puts 'Updating xliff file'
+      # uploding master xliff file
+      request = Net::HTTP::Put::Multipart.new("/api/projects/#{@key}/files/#{@xliff_file_id}/locales/#{@source_locale}", {
+        "file" => UploadIO.new(file, "text/plain", file.path),
+        "merge" => !override,
+        "ignore_missing" => true,
+        "label" => "",
+        "low_priority" => false })
+
+      @http.request(request) {|res|
+        if !res.code.to_i.between?(200, 300)
+          raise JSON.parse(res.body)["error"]
+        end
+      }
+
+      push_master_plurals(plurals_file, override) if not plurals_file.nil?
     end
 
     def pull(locale)

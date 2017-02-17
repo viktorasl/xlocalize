@@ -35,13 +35,15 @@ module Xlocalize
       begin
         puts "Uploading master file to WebtranslateIt"
         file = File.open(master_file_name, 'r')
-        plurals_file = File.open(plurals_file_name(master_lang), 'r')
+        plurals_path = plurals_file_name(master_lang)
+        plurals_file = File.exist?(plurals_path) ? File.open(plurals_path, 'r') : nil
         wti.push_master(file, plurals_file)
         puts "Done.".green
       rescue => err
         puts err.to_s.red
       ensure
         file.close unless file.nil?
+        plurals_file.close unless plurals_file.nil?
       end if !wti.nil?
     end
 
