@@ -74,7 +74,7 @@ module Xlocalize
 
         Plist::parse_xml(file_full_path).each do |key, val|
           values = val["value"]
-          transl = values.select { |k, v| ['zero', 'one', 'few', 'other'].include?(k) }
+          transl = values.select { |k, _| ['zero', 'one', 'few', 'other'].include?(k) }
           plurals[fname_stringsdict] = {key => transl}
           sel = 'body > trans-unit[id="' << key << '"]'
           node.css(sel).remove
@@ -95,22 +95,31 @@ module Xlocalize
       end
     end
 
+    def out_list_of_translations_of_locale(locale, translations)
+      puts "Downloading translations for #{locale}"
+      translations = wti.pull(locale)
+      plurals_content = translations['plurals']
+
+      out_list = [{
+        "path" => "#{locale}.xliff",
+        "content" => translations['xliff']
+      }]
+      out_list << {
+        "path" => "#{locale}_plurals.yaml",
+        "content" => plurals_content
+      } if not plurals_content.nil?
+
+      return out_list
+    end
+
     def download(wti, locales)
       begin
         locales.each do |locale|
-          puts "Downloading translations for #{locale}"
-          translations = wti.pull(locale)
-
-          File.open("#{locale}.xliff", "w") {|file|
-            file.write(translations['xliff'])
-            puts "Done saving xliff.".green
-          }
-
-          if !translations['plurals'].nil?
-            File.open("#{locale}_plurals.yaml", "w") {|file|
-              file.write(translations['plurals'])
-              puts "Done saving plurals.".green
-            }
+          out_list_of_translations_of_locale(locale, translations).each do |out|
+            File.open(out["path"], "w") do |file|
+              file.write(out["content"])
+              puts "Done saving #{out['path']}.".green
+            end
           end
         end
       rescue => err
@@ -118,26 +127,26 @@ module Xlocalize
       end
     end
 
-    def import_xliff(locale)
-      doc = Nokogiri::XML(open("#{locale}.xliff"))
-
-      doc.xpath("//xmlns:file").each do |node|
-        file_name = node["original"]
-        parts = file_name.split('/')
-        name = ""
-        parts.each_with_index do |part, idx|
-          name += "/" if idx > 0
-          if part.end_with?(".lproj")
-            name += "#{locale}.lproj"
-          elsif idx+1 == parts.count
-            # TODO: join all parts till the last '.'
-            name += "#{part.split('.')[0]}.strings"
-          else
-            name += part
-          end
+    def filename_from_xliff_provided_filename(file_name)
+      parts = file_name.split('/')
+      name = ""
+      parts.each_with_index do |part, idx|
+        name += "/" if idx > 0
+        if part.end_with?(".lproj")
+          name += "#{locale}.lproj"
+        elsif idx+1 == parts.count
+          # TODO: join all parts till the last '.'
+          name += "#{part.split('.')[0]}.strings"
+        else
+          name += part
         end
-        
-        File.open(name, "w") do |file|
+      end
+      return name
+    end
+
+    def import_xliff(locale)
+      Nokogiri::XML(open("#{locale}.xliff")).xpath("//xmlns:file").each do |node|
+        File.open(filename_from_xliff_provided_filename(node["original"]), "w") do |file|
           (node > "body > trans-unit").each do |trans_unit|
             key = trans_unit["id"]
             target = (trans_unit > "target").text
@@ -148,7 +157,6 @@ module Xlocalize
             file.write "\"#{key}\" = #{target.inspect};\n\n"
           end
         end
-
       end
     end
 
