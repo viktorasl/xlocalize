@@ -25,8 +25,8 @@ module Xlocalize
           @xliff_file_id = file["id"] if file['name'].end_with? '.xliff'
           @plurals_file_id = file["id"] if file['name'] == 'plurals.yaml'
         }
-        raise "Could not find master xliff file for source locale #{@source_locale}" if @xliff_file_id.nil?
       }
+      raise "Could not find master xliff file for source locale #{@source_locale}" if @xliff_file_id.nil?
     end
 
     def send_request(request)
