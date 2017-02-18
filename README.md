@@ -1,3 +1,8 @@
+[![Gem Version](https://badge.fury.io/rb/xlocalize.svg)](https://badge.fury.io/rb/xlocalize)
+[![Code Climate](https://codeclimate.com/github/viktorasl/xlocalize/badges/gpa.svg)](https://codeclimate.com/github/viktorasl/xlocalize)
+[![Test Coverage](https://codeclimate.com/github/viktorasl/xlocalize/badges/coverage.svg)](https://codeclimate.com/github/viktorasl/xlocalize/coverage)
+[![Inline docs](http://inch-ci.org/github/viktorasl/xlocalize.svg?branch=master)](http://inch-ci.org/github/viktorasl/xlocalize)
+
 # Xlocalize
 
 To see all commands execute:
