@@ -8,3 +8,9 @@ before_install: gem install bundler
 install: bundle install
 script: bundle exec rspec -f d -c
 os: osx
+addons:
+  code_climate:
+    repo_token: b4206ed2b9443314c998e8909dfa31f0ed476ea5ab460b98e102cd20508ff564
+after_success:
+  - bundle exec codeclimate-test-reporter
+  
