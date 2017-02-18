@@ -23,18 +23,21 @@ module Xlocalize
         project["project_files"].each {|file|
           next if file["locale_code"] != @source_locale
           @xliff_file_id = file["id"] if file['name'].end_with? '.xliff'
-          @plurals_file_id = file["id"] if file['name'] == 'plurals.yaml'
+          @plurals_file_id = file["id"] if file['name'] == 'plurals.yml'
         }
       }
       raise "Could not find master xliff file for source locale #{@source_locale}" if @xliff_file_id.nil?
     end
 
     def send_request(request)
+      resp = nil
       @http.request(request) { |res|
         if !res.code.to_i.between?(200, 300)
           raise JSON.parse(res.body)["error"]
         end
+        resp = res
       }
+      return resp
     end
 
     def master_file_for_locale_request(file_id, file, override)
@@ -50,21 +53,27 @@ module Xlocalize
 
     def push_master_plurals(plurals_file, override = true)
       if @plurals_file_id.nil?
-        puts 'Creating plurals file'
+        if $VERBOSE
+          $stderr.puts 'Creating plurals file'
+        end
         # /api/projects/:project_token/files [POST]
         send_request(Net::HTTP::Post::Multipart.new("/api/projects/#{@key}/files", {
           "file" => UploadIO.new(plurals_file, "text/plain", plurals_file.path),
-          "name" => "plurals.yaml",
+          "name" => "plurals.yml",
           "low_priority" => false
         }))
       else
-        puts 'Updating plurals file'
+        if $VERBOSE
+          $stderr.puts 'Updating plurals file'
+        end
         send_request(master_file_for_locale_request(@plurals_file_id, plurals_file, override))
       end
     end
 
     def push_master(file, plurals_file, override = true)
-      puts 'Updating xliff file'
+      if $VERBOSE
+        $stderr.puts 'Updating xliff file'
+      end
       send_request(master_file_for_locale_request(@xliff_file_id, file, override))
       push_master_plurals(plurals_file, override) if not plurals_file.nil?
     end
@@ -72,13 +81,11 @@ module Xlocalize
     def pull(locale)
       # downloading master xliff file
       data = {}
-      res = http.request(Net::HTTP::Get.new("/api/projects/#{@key}/files/#{@xliff_file_id}/locales/#{locale}"))
-      raise JSON.parse(res.body)["error"] if !res.code.to_i.between?(200, 300)
+      res = send_request(Net::HTTP::Get.new("/api/projects/#{@key}/files/#{@xliff_file_id}/locales/#{locale}"))
       data['xliff'] = res.body
       # downloading master plurals file
       if !@plurals_file_id.nil?
-        res = http.request(Net::HTTP::Get.new("/api/projects/#{@key}/files/#{@plurals_file_id}/locales/#{locale}"))
-        raise JSON.parse(res.body)["error"] if !res.code.to_i.between?(200, 300)
+        res = send_request(Net::HTTP::Get.new("/api/projects/#{@key}/files/#{@plurals_file_id}/locales/#{locale}"))
         data['plurals'] = res.body
       end
       return data
