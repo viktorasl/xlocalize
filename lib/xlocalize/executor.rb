@@ -95,7 +95,7 @@ module Xlocalize
       end
     end
 
-    def out_list_of_translations_of_locale(locale, translations)
+    def out_list_of_translations_of_locale(wti, locale, translations)
       puts "Downloading translations for #{locale}"
       translations = wti.pull(locale)
       plurals_content = translations['plurals']
@@ -115,7 +115,7 @@ module Xlocalize
     def download(wti, locales)
       begin
         locales.each do |locale|
-          out_list_of_translations_of_locale(locale, translations).each do |out|
+          out_list_of_translations_of_locale(wti, locale, translations).each do |out|
             File.open(out["path"], "w") do |file|
               file.write(out["content"])
               puts "Done saving #{out['path']}.".green
