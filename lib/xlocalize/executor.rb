@@ -1,9 +1,9 @@
 require 'xlocalize/webtranslateit'
+require 'xlocalize/xliff'
 require 'colorize'
 require 'nokogiri'
 require 'plist'
 require 'yaml'
-require 'pathname'
 
 module Xlocalize
   class Executor
@@ -30,7 +30,10 @@ module Xlocalize
       end
 
       purelyze(master_lang, target, excl_prefix, project)
+      push_master_file(wti, master_lang, master_file_name)
+    end
 
+    def push_master_file(wti, master_lang, master_file_name)
       # Pushing master file to WebtranslateIt
       begin
         puts "Uploading master file to WebtranslateIt"
@@ -49,48 +52,21 @@ module Xlocalize
 
     def purelyze(locale, target, excl_prefix, project)
       locale_file_name = locale_file_name(locale)
-      target_prefix = "#{target}/"
       doc = Nokogiri::XML(open(locale_file_name))
 
-      puts "Removing all files not matching required targets"
-      doc.xpath("//xmlns:file").each { |node|
-        fname = node["original"]
-        node.remove if !fname.start_with?(target_prefix) || !fname.include?(".lproj/")
-      }
+      puts "Removing all files not matching required targets" if $VERBOSE
+      doc.filter_not_target_files(target)
+      puts "Removing trans-unit's having reserverd prefix in their sources" if $VERBOSE
+      doc.filter_trans_units(excl_prefix)
+      puts "Filtering plurals" if $VERBOSE
+      plurals = doc.filter_plurals(project)
+      puts "Removing all files having no trans-unit elements after removal" if $VERBOSE
+      doc.filter_empty_files
 
-      puts "Removing trans-unit's having reserverd prefix in their sources"
-      doc.xpath("//xmlns:source").each { |node|
-        node.parent.remove if node.content.start_with?(excl_prefix)
-      }
-
-      puts "Filtering plurals"
-      plurals = {}
-      doc.xpath("//xmlns:file").each { |node|
-        fname = node["original"]
-        next if !fname.end_with?(".strings")
-        fname_stringsdict = fname << 'dict'
-        file_full_path = Pathname.new(project).split.first.to_s  << '/' << fname_stringsdict
-        next if !File.exist?(file_full_path)
-
-        Plist::parse_xml(file_full_path).each do |key, val|
-          values = val["value"]
-          transl = values.select { |k, _| ['zero', 'one', 'few', 'other'].include?(k) }
-          plurals[fname_stringsdict] = {key => transl}
-          sel = 'body > trans-unit[id="' << key << '"]'
-          node.css(sel).remove
-        end
-      }
-
-      puts "Removing all files having no trans-unit elements after removal"
-      doc.xpath("//xmlns:body").each { |node|
-        node.parent.remove if node.elements.count == 0
-      }
-
-      puts "Writing modified XLIFF file to #{locale_file_name}"
+      puts "Writing modified XLIFF file to #{locale_file_name}" if $VERBOSE
       File.open(locale_file_name, 'w') { |f| f.write(doc.to_xml) }
-
       if !plurals.empty?
-        puts "Writing plurals to plurals YAML file"
+        puts "Writing plurals to plurals YAML file" if $VERBOSE
         File.open(plurals_file_name(locale), 'w') { |f| f.write({locale => plurals}.to_yaml) }
       end
     end
@@ -180,11 +156,11 @@ module Xlocalize
     end
 
     def import(locales)
-      puts 'Importing translations'
+      puts 'Importing translations' if $VERBOSE
       locales.each do |locale|
         import_xliff(locale)
         import_plurals_if_needed(locale)
-        puts "Done #{locale}".green
+        puts "Done #{locale}".green if $VERBOSE
       end
     end
   end
