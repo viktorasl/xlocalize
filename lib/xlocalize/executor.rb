@@ -91,6 +91,9 @@ module Xlocalize
     def download(wti, locales)
       begin
         locales.each do |locale|
+          puts "Downloading translations for #{locale}"
+          translations = wti.pull(locale)
+          
           out_list_of_translations_of_locale(wti, locale, translations).each do |out|
             File.open(out["path"], "w") do |file|
               file.write(out["content"])
