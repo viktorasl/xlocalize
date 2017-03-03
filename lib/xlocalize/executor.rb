@@ -106,7 +106,7 @@ module Xlocalize
       end
     end
 
-    def filename_from_xliff_provided_filename(file_name)
+    def filename_from_xliff_provided_filename(file_name, locale)
       parts = file_name.split('/')
       name = ""
       parts.each_with_index do |part, idx|
@@ -125,7 +125,7 @@ module Xlocalize
 
     def import_xliff(locale)
       Nokogiri::XML(open("#{locale}.xliff")).xpath("//xmlns:file").each do |node|
-        File.open(filename_from_xliff_provided_filename(node["original"]), "w") do |file|
+        File.open(filename_from_xliff_provided_filename(node["original"], locale), "w") do |file|
           (node > "body > trans-unit").each do |trans_unit|
             key = trans_unit["id"]
             target = (trans_unit > "target").text
