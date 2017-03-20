@@ -91,7 +91,6 @@ module Xlocalize
     def download(wti, locales)
       begin
         locales.each do |locale|
-          puts "Downloading translations for #{locale}"
           translations = wti.pull(locale)
           
           out_list_of_translations_of_locale(wti, locale, translations).each do |out|
@@ -106,7 +105,7 @@ module Xlocalize
       end
     end
 
-    def filename_from_xliff_provided_filename(file_name, locale)
+    def localized_filename(file_name, locale)
       parts = file_name.split('/')
       name = ""
       parts.each_with_index do |part, idx|
@@ -114,8 +113,9 @@ module Xlocalize
         if part.end_with?(".lproj")
           name += "#{locale}.lproj"
         elsif idx+1 == parts.count
+          extension = (part.split('.')[1] == 'stringsdict') ? 'stringsdict' : 'strings'
           # TODO: join all parts till the last '.'
-          name += "#{part.split('.')[0]}.strings"
+          name += "#{part.split('.')[0]}.#{extension}"
         else
           name += part
         end
@@ -124,8 +124,10 @@ module Xlocalize
     end
 
     def import_xliff(locale)
-      Nokogiri::XML(open("#{locale}.xliff")).xpath("//xmlns:file").each do |node|
-        File.open(filename_from_xliff_provided_filename(node["original"], locale), "w") do |file|
+      fname = "#{locale}.xliff"
+      puts "Importing translations from #{fname}"
+      Nokogiri::XML(open(fname)).xpath("//xmlns:file").each do |node|
+        File.open(localized_filename(node["original"], locale), "w") do |file|
           (node > "body > trans-unit").each do |trans_unit|
             key = trans_unit["id"]
             target = (trans_unit > "target").text
@@ -142,9 +144,11 @@ module Xlocalize
     def import_plurals_if_needed(locale)
       plurals_fname = "#{locale}_plurals.yaml"
       return if !File.exist?(plurals_fname)
+      puts "Importing translations from #{plurals_fname}"
       plurals_yml = YAML.load_file(plurals_fname)
-      plurals_yml[locale].each do |fname, trans_units|
+      plurals_yml[locale].each do |original_fname, trans_units|
         content = {}
+        fname = localized_filename(original_fname, locale)
         trans_units.each do |key, vals|
           content[key] = {
             "NSStringLocalizedFormatKey" => "%\#@value@",
