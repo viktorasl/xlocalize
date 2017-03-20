@@ -2,7 +2,6 @@ require 'xlocalize/webtranslateit'
 require 'xlocalize/xliff'
 require 'colorize'
 require 'nokogiri'
-require 'plist'
 require 'yaml'
 
 module Xlocalize
@@ -147,18 +146,37 @@ module Xlocalize
       puts "Importing translations from #{plurals_fname}"
       plurals_yml = YAML.load_file(plurals_fname)
       plurals_yml[locale].each do |original_fname, trans_units|
-        content = {}
+        content = ''
+        content << '<?xml version="1.0" encoding="UTF-8"?>' + "\n"
+        content << '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' + "\n"
+        content << '<plist version="1.0">' + "\n"
+
         fname = localized_filename(original_fname, locale)
-        trans_units.each do |key, vals|
-          content[key] = {
-            "NSStringLocalizedFormatKey" => "%\#@value@",
-            "value" => vals.merge({
-              "NSStringFormatSpecTypeKey" => "NSStringPluralRuleType",
-              "NSStringFormatValueTypeKey" => "d"
-            })
-          }
+        content << "<dict>\n"
+        trans_units.each do |key, element|
+          content << "\t<key>#{key}</key>\n"
+          content << "\t<dict>\n"
+
+          content << "\t\t<key>NSStringLocalizedFormatKey</key>\n"
+          content << "\t\t<string>%\#@value@</string>\n"
+          content << "\t\t<key>value</key>\n"
+          content << "\t\t<dict>\n"
+          element.each do |k, v|
+            content << "\t\t\t<key>#{k}</key>\n"
+            content << "\t\t\t<string>#{v}</string>\n"
+          end
+          content << "\t\t\t<key>NSStringFormatSpecTypeKey</key>\n"
+          content << "\t\t\t<string>NSStringPluralRuleType</string>\n"
+          content << "\t\t\t<key>NSStringFormatValueTypeKey</key>\n"
+          content << "\t\t\t<string>d</string>\n"
+          content << "\t\t</dict>\n"
+
+          content << "\t</dict>\n"
         end
-        File.open(fname, 'w') { |f| f.write content.to_plist }
+        content << "</dict>\n"
+        content << "</plist>\n"
+
+        File.open(fname, 'w') { |f| f.write content }
       end
     end
 
