@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'plist'
 require 'pathname'
 
 module Xlocalize
