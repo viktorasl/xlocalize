@@ -13,7 +13,7 @@ describe Nokogiri::XML::Document do
     </xliff>
     eos
     doc = Nokogiri::XML(xliff)
-    doc.filter_not_target_files("ImportExportExample")
+    doc.filter_not_target_files(["ImportExportExample"])
     expected = ["ImportExportExample/en.lproj/singles.strings", "ImportExportExample/en.lproj/and_plurals.strings"]
     expect(doc.xpath("//xmlns:file").map { |f| f["original"] }).to eq(expected)
   end

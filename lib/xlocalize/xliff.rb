@@ -2,14 +2,23 @@ require 'nokogiri'
 require 'plist'
 require 'pathname'
 
+class String
+  def start_with_either?(prefixes)
+    prefixes.each do |prefix|
+      return true if start_with?(prefix)
+    end
+    return false
+  end
+end
+  
 module Xlocalize
   class ::Nokogiri::XML::Document
 
-    def filter_not_target_files(target)
-      target_prefix = "#{target}/"
+    def filter_not_target_files(targets)
+      prefixes = targets.map { |t| "#{t}/" }
       self.xpath("//xmlns:file").each { |node|
         fname = node["original"]
-        node.remove if !fname.start_with?(target_prefix) || !fname.include?(".lproj/")
+        node.remove if !fname.start_with_either?(prefixes) || !fname.include?(".lproj/")
       }
     end
 

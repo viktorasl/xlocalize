@@ -16,7 +16,7 @@ describe Xlocalize::Executor do
     fixture_path = 'spec/fixtures/ImportExportExample/'
 
     wti = WebtranslateItMock.new
-    Xlocalize::Executor.new.export_master(wti, fixture_path << '/ImportExportExample.xcodeproj', 'ImportExportExample', '##', 'en')
+    Xlocalize::Executor.new.export_master(wti, fixture_path << '/ImportExportExample.xcodeproj', ['ImportExportExample'], '##', 'en')
 
     it 'should create a YAML file for plurals in project' do
       plurals_yml = YAML.load_file('en.xliff_plurals.yml')

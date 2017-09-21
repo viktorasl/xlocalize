@@ -15,7 +15,7 @@ module Xlocalize
       return "#{locale}.xliff"
     end
 
-    def export_master(wti, project, target, excl_prefix, master_lang)
+    def export_master(wti, project, targets, excl_prefix, master_lang)
       master_file_name = locale_file_name(master_lang)
       
       # hacky way to finish xcodebuild -exportLocalizations script, because
@@ -28,7 +28,7 @@ module Xlocalize
         sleep(1)
       end
 
-      purelyze(master_lang, target, excl_prefix, project)
+      purelyze(master_lang, targets, excl_prefix, project)
       push_master_file(wti, master_lang, master_file_name) if !wti.nil?
     end
 
@@ -49,12 +49,12 @@ module Xlocalize
       end if !wti.nil?
     end
 
-    def purelyze(locale, target, excl_prefix, project)
+    def purelyze(locale, targets, excl_prefix, project)
       locale_file_name = locale_file_name(locale)
       doc = Nokogiri::XML(open(locale_file_name))
 
       puts "Removing all files not matching required targets" if $VERBOSE
-      doc.filter_not_target_files(target)
+      doc.filter_not_target_files(targets)
       puts "Removing trans-unit's having reserverd prefix in their sources" if $VERBOSE
       doc.filter_trans_units(excl_prefix)
       puts "Filtering plurals" if $VERBOSE
