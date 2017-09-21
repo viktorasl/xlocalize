@@ -1,4 +1,4 @@
 module Xlocalize
-  VERSION = "0.2.6"
+  VERSION = "0.3.0"
   DESCRIPTION = "Xcode localizations import/export helper tool"
 end
