@@ -29,7 +29,7 @@ module Xlocalize
       end
 
       purelyze(master_lang, target, excl_prefix, project)
-      push_master_file(wti, master_lang, master_file_name)
+      push_master_file(wti, master_lang, master_file_name) if !wti.nil?
     end
 
     def push_master_file(wti, master_lang, master_file_name)
