@@ -1,5 +1,6 @@
 require 'xlocalize/webtranslateit'
 require 'xlocalize/xliff'
+require 'xlocalize/helper'
 require 'colorize'
 require 'nokogiri'
 require 'yaml'
@@ -17,15 +18,20 @@ module Xlocalize
 
     def export_master(wti, project, targets, excl_prefix, master_lang)
       master_file_name = locale_file_name(master_lang)
-      
-      # hacky way to finish xcodebuild -exportLocalizations script, because
-      # since Xcode7.3 & OS X Sierra script hangs even though it produces
-      # xliff output
-      # http://www.openradar.me/25857436
+
       File.delete(master_file_name) if File.exist?(master_file_name)
-      system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project} & sleep 0"
-      while !File.exist?(master_file_name) do
-        sleep(1)
+
+      if Helper.xcode_at_least?(9)
+        system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project}"
+      else
+        # hacky way to finish xcodebuild -exportLocalizations script, because
+        # since Xcode7.3 & OS X Sierra script hangs even though it produces
+        # xliff output
+        # http://www.openradar.me/25857436
+        system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project} & sleep 0"
+        while !File.exist?(master_file_name) do
+          sleep(1)
+        end        
       end
 
       purelyze(master_lang, targets, excl_prefix, project)

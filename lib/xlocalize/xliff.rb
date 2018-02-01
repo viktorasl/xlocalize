@@ -46,6 +46,7 @@ module Xlocalize
         end
         plurals[fname_stringsdict] = translations
       }
+      plurals.each { |k, _| self.css('file[original="' << k << '"]').remove }
       return plurals
     end
 
