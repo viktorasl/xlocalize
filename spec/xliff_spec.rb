@@ -83,4 +83,25 @@ describe Nokogiri::XML::Document do
     doc.filter_trans_units("##")
     expect(doc.xpath("//xmlns:trans-unit").map { |trans_unit| trans_unit["id"] }).to eq(["valid1", "valid2", "valid3"])
   end
+
+  it 'filters strings files that match storyboard or xib name' do
+    xliff = <<-eos
+    <?xml version="1.0" encoding="UTF-8"?>
+    <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+      <file original="path/to/translations/en.lproj/view.strings" datatype="plaintext" source-language="en"></file>
+      <file original="path/to/xibs/en.lproj/view.xib" datatype="plaintext" source-language="en"></file>
+      <file original="path/to/translations/en.lproj/story.strings" datatype="plaintext" source-language="en"></file>
+      <file original="path/to/storyboards/en.lproj/story.storyboard" datatype="plaintext" source-language="en"></file>
+      <file original="path/to/translations/en.lproj/only_strings.strings" datatype="plaintext" source-language="en"></file>
+    </xliff>
+    eos
+    doc = Nokogiri::XML(xliff)
+    doc.filter_duplicate_storyboard_xib_files
+    expected = [
+      "path/to/xibs/en.lproj/view.xib",
+      "path/to/storyboards/en.lproj/story.storyboard",
+      "path/to/translations/en.lproj/only_strings.strings"
+    ]
+    expect(doc.xpath("//xmlns:file").map { |f| f["original"] }).to eq(expected)
+  end
 end

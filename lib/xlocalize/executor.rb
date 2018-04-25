@@ -34,7 +34,7 @@ module Xlocalize
         end        
       end
 
-      purelyze(master_lang, targets, excl_prefix, project)
+      purelyze(master_lang, targets, excl_prefix, project, filer_ui_duplicates=Helper.xcode_at_least?(9.3))
       push_master_file(wti, master_lang, master_file_name) if !wti.nil?
     end
 
@@ -55,7 +55,7 @@ module Xlocalize
       end if !wti.nil?
     end
 
-    def purelyze(locale, targets, excl_prefix, project)
+    def purelyze(locale, targets, excl_prefix, project, filer_ui_duplicates=false)
       locale_file_name = locale_file_name(locale)
       doc = Nokogiri::XML(open(locale_file_name))
 
@@ -67,7 +67,11 @@ module Xlocalize
       plurals = doc.filter_plurals(project)
       puts "Removing all files having no trans-unit elements after removal" if $VERBOSE
       doc.filter_empty_files
-
+      if filer_ui_duplicates
+        puts "Filtering duplicate xib & storyboard translation files" if $VERBOSE
+        doc.filter_duplicate_storyboard_xib_files
+      end
+      
       puts "Writing modified XLIFF file to #{locale_file_name}" if $VERBOSE
       File.open(locale_file_name, 'w') { |f| f.write(doc.to_xml) }
       if !plurals.empty?
