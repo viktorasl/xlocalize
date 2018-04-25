@@ -55,5 +55,19 @@ module Xlocalize
         node.parent.remove if node.elements.count == 0
       }
     end
+
+    def filter_duplicate_storyboard_xib_files
+      all_files = self.xpath("//xmlns:file").map { |node| Pathname.new(node["original"]).split.last.to_s }
+      self.xpath("//xmlns:file").each do |node|
+        fname = Pathname.new(node["original"]).split.last.to_s
+        if fname.end_with?(".strings")
+          storyboard_fname = fname.sub(".strings", ".storyboard")
+          xib_fname = fname.sub(".strings", ".xib")
+          if all_files.include?(storyboard_fname) || all_files.include?(xib_fname)
+            node.remove
+          end
+        end
+      end
+    end
   end
 end
