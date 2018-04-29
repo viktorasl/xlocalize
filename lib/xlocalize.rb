@@ -68,6 +68,8 @@ module Xlocalize
       program :version, Xlocalize::VERSION
       program :description, Xlocalize::DESCRIPTION
 
+      global_option('--verbose') { $VERBOSE = true }
+
       define_export_cmd
       define_download_cmd
       define_import_cmd
