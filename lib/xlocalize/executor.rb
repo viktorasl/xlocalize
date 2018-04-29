@@ -134,8 +134,8 @@ module Xlocalize
 
     def import_xliff(locale)
       fname = "#{locale}.xliff"
-      puts "Importing translations from #{fname}"
-      Nokogiri::XML(open(fname)).xpath("//xmlns:file").each do |node|
+      puts "Importing translations from #{fname}" if $VERBOSE
+      Nokogiri::XML(File.open(fname)).xpath("//xmlns:file").each do |node|
         File.open(localized_filename(node["original"], locale), "w") do |file|
           (node > "body > trans-unit").each do |trans_unit|
             key = trans_unit["id"]
