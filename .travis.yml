@@ -1,6 +1,5 @@
 language: ruby
 cache: bundler
-rvm: 2.2
 matrix:
   include:
     - {os: osx, osx_image: xcode8.3}
