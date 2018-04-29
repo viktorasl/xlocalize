@@ -5,13 +5,15 @@ describe Xlocalize::Executor do
     describe "plurals not exist" do
       before(:each) do
         allow(File).to receive(:open).with("de.xliff").and_return(File.open("spec/fixtures/de/de.xliff"))
+        allow(File).to receive(:exist?).with("de_plurals.yaml").and_return(false)
       end
 
       it "writes xliff translations to files" do
         file1 = StringIO.new
         file2 = StringIO.new
-        expect(File).to receive(:exist?).with("de_plurals.yaml").and_return(false)
+        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_one.strings").and_return(true)
         expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_one.strings", "w").and_yield(file1)
+        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_two.strings").and_return(true)
         expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_two.strings", "w").and_yield(file2)
 
         Xlocalize::Executor.new.import(["de"])
@@ -31,11 +33,23 @@ describe Xlocalize::Executor do
 
       it "raises exception if file specified in xliff is not found" do
         file = StringIO.new
+        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_one.strings").and_return(true)
         expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_one.strings", "w").and_yield(file)
+        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_two.strings").and_return(true)
         expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_two.strings", "w").and_raise
 
         executor = Xlocalize::Executor.new
         expect { executor.import(["de"]) }.to raise_error(RuntimeError)
+      end
+
+      it "skips missing files if not found and missing files allowed" do
+        file = StringIO.new
+        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_one.strings").and_return(true)
+        expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_one.strings", "w").and_yield(file)
+        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_two.strings").and_return(false)
+        allow(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_two.strings", "w").and_raise
+
+        Xlocalize::Executor.new.import(["de"], allows_missing_files=true)
       end
     end
 
