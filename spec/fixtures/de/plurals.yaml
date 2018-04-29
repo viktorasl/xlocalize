@@ -1,0 +1,5 @@
+de:
+  path/to/plurals/en.lproj/screen.stringsdict:
+    employees:
+      one: Mitarbeiter
+      other: Mitarbeiter

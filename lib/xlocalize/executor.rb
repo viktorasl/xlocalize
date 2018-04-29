@@ -132,11 +132,18 @@ module Xlocalize
       return name
     end
 
-    def import_xliff(locale)
+    def import_xliff(locale, allows_missing_files)
       fname = "#{locale}.xliff"
-      puts "Importing translations from #{fname}"
-      Nokogiri::XML(open(fname)).xpath("//xmlns:file").each do |node|
-        File.open(localized_filename(node["original"], locale), "w") do |file|
+      puts "Importing translations from #{fname}" if $VERBOSE
+      Nokogiri::XML(File.open(fname)).xpath("//xmlns:file").each do |node|
+        tr_fname = localized_filename(node["original"], locale)
+        if !File.exist?(tr_fname)
+          err = "Missing #{tr_fname} file"
+          raise err if !allows_missing_files
+          puts err.yellow if $VERBOSE
+          next
+        end
+        File.open(tr_fname, "w") do |file|
           (node > "body > trans-unit").each do |trans_unit|
             key = trans_unit["id"]
             target = (trans_unit > "target").text
@@ -190,10 +197,10 @@ module Xlocalize
       end
     end
 
-    def import(locales)
+    def import(locales, allows_missing_files=false)
       puts 'Importing translations' if $VERBOSE
       locales.each do |locale|
-        import_xliff(locale)
+        import_xliff(locale, allows_missing_files)
         import_plurals_if_needed(locale)
         puts "Done #{locale}".green if $VERBOSE
       end

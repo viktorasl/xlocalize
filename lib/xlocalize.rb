@@ -52,12 +52,13 @@ module Xlocalize
         c.syntax = 'xlocalize import [options]'
         c.description = 'Import localized strings to Xcode project'
         c.option '--locales ARRAY', Array, 'Locales to import'
+        c.option '--allow-missing-files', 'Allow missing files read from xliff'
         c.action do |_, options|
           if options.locales.nil?
             raise 'Missing parameter'
           end
-
-          Executor.new.import(options.locales)
+          allow_missing_files = options.allow_missing_files ||= false
+          Executor.new.import(options.locales, allow_missing_files=allow_missing_files)
         end
       end
     end
@@ -66,6 +67,8 @@ module Xlocalize
       program :name, 'Xlocalize'
       program :version, Xlocalize::VERSION
       program :description, Xlocalize::DESCRIPTION
+
+      global_option('--verbose') { $VERBOSE = true }
 
       define_export_cmd
       define_download_cmd
