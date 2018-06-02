@@ -67,6 +67,9 @@ module Xlocalize
       plurals = doc.filter_plurals(project)
       puts "Removing all files having no trans-unit elements after removal" if $VERBOSE
       doc.filter_empty_files
+      puts "Unescaping translation units" if $VERBOSE
+      doc.unescape
+
       if filer_ui_duplicates
         puts "Filtering duplicate xib & storyboard translation files" if $VERBOSE
         doc.filter_duplicate_storyboard_xib_files
