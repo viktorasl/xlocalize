@@ -1,6 +1,0 @@
----
-en:
-  ImportExportExample/en.lproj/and_plurals.stringsdict:
-    users_count:
-      one: "%d user"
-      other: "%d users"
