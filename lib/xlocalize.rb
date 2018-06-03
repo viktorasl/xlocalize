@@ -16,7 +16,10 @@ module Xlocalize
         c.option '--targets ARRAY', Array, 'Target in the project'
         c.option '--excl_prefix STRING', String, 'Exclude strings having specified prefix'
         c.option '--master_lang STRING', String, 'Master language of the project'
+        c.option '--exclude_units ARRAY', Array, 'Translation unit IDs to exclude'
         c.action do |_, options|
+          options.default :exclude_units => []
+
           if options.project.nil? or
              options.targets.nil? or
              options.excl_prefix.nil? or
@@ -25,7 +28,7 @@ module Xlocalize
           end
 
           wti = WebtranslateIt.new(options.wti_key) if !options.wti_key.nil?
-          Executor.new.export_master(wti, options.project, options.targets, options.excl_prefix, options.master_lang)
+          Executor.new.export_master(wti, options.project, options.targets, options.excl_prefix, options.master_lang, options.exclude_units)
         end
       end
     end

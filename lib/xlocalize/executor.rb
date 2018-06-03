@@ -16,25 +16,25 @@ module Xlocalize
       return "#{locale}.xliff"
     end
 
-    def export_master(wti, project, targets, excl_prefix, master_lang)
+    def export_master(wti, project, targets, excl_prefix, master_lang, exclude_units=[])
       master_file_name = locale_file_name(master_lang)
 
       File.delete(master_file_name) if File.exist?(master_file_name)
 
       if Helper.xcode_at_least?(9)
-        system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project}"
+        Kernel.system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project}"
       else
         # hacky way to finish xcodebuild -exportLocalizations script, because
         # since Xcode7.3 & OS X Sierra script hangs even though it produces
         # xliff output
         # http://www.openradar.me/25857436
-        system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project} & sleep 0"
+        Kernel.system "xcodebuild -exportLocalizations -localizationPath ./ -project #{project} & sleep 0"
         while !File.exist?(master_file_name) do
           sleep(1)
         end        
       end
 
-      purelyze(master_lang, targets, excl_prefix, project, filer_ui_duplicates=Helper.xcode_at_least?(9.3))
+      purelyze(master_lang, targets, excl_prefix, project, filer_ui_duplicates=Helper.xcode_at_least?(9.3), exclude_units)
       push_master_file(wti, master_lang, master_file_name) if !wti.nil?
     end
 
@@ -55,9 +55,9 @@ module Xlocalize
       end if !wti.nil?
     end
 
-    def purelyze(locale, targets, excl_prefix, project, filer_ui_duplicates=false)
+    def purelyze(locale, targets, excl_prefix, project, filer_ui_duplicates=false, exclude_units)
       locale_file_name = locale_file_name(locale)
-      doc = Nokogiri::XML(open(locale_file_name))
+      doc = Nokogiri::XML(File.open(locale_file_name))
 
       puts "Removing all files not matching required targets" if $VERBOSE
       doc.filter_not_target_files(targets)
@@ -65,6 +65,8 @@ module Xlocalize
       doc.filter_trans_units(excl_prefix)
       puts "Filtering plurals" if $VERBOSE
       plurals = doc.filter_plurals(project)
+      puts "Removing excluded translation units" if $VERBOSE
+      doc.xpath("//xmlns:trans-unit").each { |unit| unit.remove if exclude_units.include?(unit['id']) }
       puts "Removing all files having no trans-unit elements after removal" if $VERBOSE
       doc.filter_empty_files
       puts "Unescaping translation units" if $VERBOSE
