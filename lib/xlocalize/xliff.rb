@@ -69,5 +69,11 @@ module Xlocalize
         end
       end
     end
+
+    def unescape
+      self.xpath("//xmlns:source").each do |src|
+        src.content = CGI.unescapeHTML(src.content)
+      end
+    end
   end
 end
