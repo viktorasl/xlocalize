@@ -3,7 +3,10 @@
   <file original="import_file.strings" source-language="en" datatype="plaintext">
     <body>
       <trans-unit id="with.quotes">
-        <source>Some text which &amp;quot;has&amp;quot; quotes</source>
+        <source>Some text which \"has\" quotes</source>
+      </trans-unit>
+      <trans-unit id="new.line">
+        <source>wrapped\\ntext</source>
       </trans-unit>
       <trans-unit id="without.quotes">
         <source>Usual text</source>
