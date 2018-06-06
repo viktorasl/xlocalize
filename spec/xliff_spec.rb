@@ -108,6 +108,10 @@ describe Nokogiri::XML::Document do
   it 'unescapes trans units if they are escaped' do
     doc = Nokogiri::XML(File.open('spec/fixtures/xliff_quotes.xliff'))
     doc.unescape
-    expect(doc.xpath('//xmlns:source').to_xml).to eq('<source>Some text which "has" quotes</source><source>Usual text</source>')
+    expect(doc.xpath('//xmlns:source').map { |s| s.text }).to match_array([
+      'Some text which "has" quotes',
+      'wrapped\ntext',
+      'Usual text'
+    ])
   end
 end
