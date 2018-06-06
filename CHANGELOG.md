@@ -1,3 +1,7 @@
+## [v0.4.1](https://github.com/viktorasl/xlocalize/releases/tag/0.4.1)
+
+* [5be2948](https://github.com/viktorasl/xlocalize/commit/5be2948bbe5a4c1867a9780f122778f2dcd3b1a4) Unescapes xliff files on export
+
 ## [v0.4.0](https://github.com/viktorasl/xlocalize/releases/tag/0.4.0)
 
 * [8e2ded3](https://github.com/viktorasl/xlocalize/commit/8e2ded3e9448edca3ed18d88be4c2c0a37122891) Removes redundant files
