@@ -1,9 +1,11 @@
 require 'xlocalize/webtranslateit'
 require 'xlocalize/xliff'
 require 'xlocalize/helper'
+require 'xlocalize/importer'
 require 'colorize'
 require 'nokogiri'
 require 'yaml'
+require 'apfel'
 
 module Xlocalize
   class Executor
@@ -137,35 +139,30 @@ module Xlocalize
       return name
     end
 
-    def import_xliff(locale, allows_missing_files)
-      fname = "#{locale}.xliff"
+    def import_xliff(fname)
       puts "Importing translations from #{fname}" if $VERBOSE
       Nokogiri::XML(File.open(fname)).xpath("//xmlns:file").each do |node|
-        tr_fname = localized_filename(node["original"], locale)
-        if !File.exist?(tr_fname)
-          err = "Missing #{tr_fname} file"
-          raise err if !allows_missing_files
-          puts err.yellow if $VERBOSE
-          next
-        end
-        File.open(tr_fname, "w") do |file|
-          (node > "body > trans-unit").each do |trans_unit|
-            key = trans_unit["id"]
-            target = (trans_unit > "target").text
-            note = (trans_unit > "note").text
-            note = "(No Commment)" if note.length <= 0
-            
-            file.write "/* #{note} */\n"
-            file.write "\"#{key}\" = #{target.inspect};\n\n"
-          end
-        end
+        tr_fname = node["original"]
+        source_lang = node["source-language"]
+        target_lang = node["target-language"]
+        
+        localized_src_fname = localized_filename(tr_fname, source_lang)
+        next if !File.exist?(localized_src_fname)
+
+        translations_hash = Apfel.parse(localized_src_fname).to_hash
+        importer = Importer.new
+        importer.translate_from_node(translations_hash, node)
+
+        f_content = importer.strings_content_from_translations_hash(translations_hash)
+        target_fname = localized_filename(tr_fname, target_lang)
+        File.open(target_fname, 'w') { |f| f.write(f_content) }
       end
     end
 
     def import_plurals_if_needed(locale)
       plurals_fname = "#{locale}_plurals.yaml"
       return if !File.exist?(plurals_fname)
-      puts "Importing translations from #{plurals_fname}"
+      puts "Importing translations from #{plurals_fname}" if $VERBOSE
       plurals_yml = YAML.load_file(plurals_fname)
       plurals_yml[locale].each do |original_fname, trans_units|
         content = ''
@@ -205,7 +202,7 @@ module Xlocalize
     def import(locales, allows_missing_files=false)
       puts 'Importing translations' if $VERBOSE
       locales.each do |locale|
-        import_xliff(locale, allows_missing_files)
+        import_xliff("#{locale}.xliff")
         import_plurals_if_needed(locale)
         puts "Done #{locale}".green if $VERBOSE
       end

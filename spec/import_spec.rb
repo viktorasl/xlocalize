@@ -11,9 +11,11 @@ describe Xlocalize::Executor do
       it "writes xliff translations to files" do
         file1 = StringIO.new
         file2 = StringIO.new
-        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_one.strings").and_return(true)
+        expect(File).to receive(:exist?).with("path/to/strings/en.lproj/translations_file_one.strings").and_return(true)
+        expect(Apfel).to receive(:parse).with("path/to/strings/en.lproj/translations_file_one.strings").and_return({"string_one" => {"The Book" => "Comment 1"}})
         expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_one.strings", "w").and_yield(file1)
-        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_two.strings").and_return(true)
+        expect(File).to receive(:exist?).with("path/to/strings/en.lproj/translations_file_two.strings").and_return(true)
+        expect(Apfel).to receive(:parse).with("path/to/strings/en.lproj/translations_file_two.strings").and_return({"string_two" => {"A Train" => "Comment 2"}})
         expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_two.strings", "w").and_yield(file2)
 
         Xlocalize::Executor.new.import(["de"])
@@ -31,25 +33,15 @@ describe Xlocalize::Executor do
         )
       end
 
-      it "raises exception if file specified in xliff is not found" do
+      it "skips missing files" do
         file = StringIO.new
-        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_one.strings").and_return(true)
+        expect(File).to receive(:exist?).with("path/to/strings/en.lproj/translations_file_one.strings").and_return(true)
+        expect(Apfel).to receive(:parse).with("path/to/strings/en.lproj/translations_file_one.strings").and_return({"string_one" => {"The Book" => "Comment 1"}})
         expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_one.strings", "w").and_yield(file)
-        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_two.strings").and_return(true)
-        expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_two.strings", "w").and_raise
+        expect(File).to receive(:exist?).with("path/to/strings/en.lproj/translations_file_two.strings").and_return(false)
+        allow(Apfel).to receive(:parse).with("path/to/strings/en.lproj/translations_file_two.strings").and_raise
 
-        executor = Xlocalize::Executor.new
-        expect { executor.import(["de"]) }.to raise_error(RuntimeError)
-      end
-
-      it "skips missing files if not found and missing files allowed" do
-        file = StringIO.new
-        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_one.strings").and_return(true)
-        expect(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_one.strings", "w").and_yield(file)
-        expect(File).to receive(:exist?).with("path/to/strings/de.lproj/translations_file_two.strings").and_return(false)
-        allow(File).to receive(:open).with("path/to/strings/de.lproj/translations_file_two.strings", "w").and_raise
-
-        Xlocalize::Executor.new.import(["de"], allows_missing_files=true)
+        Xlocalize::Executor.new.import(["de"])
       end
     end
 
