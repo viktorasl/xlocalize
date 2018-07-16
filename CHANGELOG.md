@@ -1,3 +1,8 @@
+## [v0.5.0](https://github.com/viktorasl/xlocalize/releases/tag/0.5.0)
+
+* [cb03ba3](https://github.com/viktorasl/xlocalize/commit/cb03ba3a91c3b4218fd880b50c7b9f2fff113573) Translations import revamp
+* [bb768a4](https://github.com/viktorasl/xlocalize/commit/bb768a45111519d6797bc38c1a31aed87499d6c9) Not overriding translations on export to WebtranslateIt
+
 ## [v0.4.1](https://github.com/viktorasl/xlocalize/releases/tag/0.4.1)
 
 * [5be2948](https://github.com/viktorasl/xlocalize/commit/5be2948bbe5a4c1867a9780f122778f2dcd3b1a4) Unescapes xliff files on export
