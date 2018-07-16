@@ -40,18 +40,18 @@ module Xlocalize
       return resp
     end
 
-    def master_file_for_locale_request(file_id, file, override)
+    def master_file_for_locale_request(file_id, file)
       # /api/projects/:project_token/files/:master_project_file_id/locales/:locale_code [PUT]
       return Net::HTTP::Put::Multipart.new("/api/projects/#{@key}/files/#{file_id}/locales/#{@source_locale}", {
         "file" => UploadIO.new(file, "text/plain", file.path),
-        "merge" => !override,
+        "merge" => true,
         "ignore_missing" => true,
         "label" => "",
         "low_priority" => false
       })
     end
 
-    def push_master_plurals(plurals_file, override = true)
+    def push_master_plurals(plurals_file)
       if @plurals_file_id.nil?
         if $VERBOSE
           $stderr.puts 'Creating plurals file'
@@ -66,16 +66,16 @@ module Xlocalize
         if $VERBOSE
           $stderr.puts 'Updating plurals file'
         end
-        send_request(master_file_for_locale_request(@plurals_file_id, plurals_file, override))
+        send_request(master_file_for_locale_request(@plurals_file_id, plurals_file))
       end
     end
 
-    def push_master(file, plurals_file, override = true)
+    def push_master(file, plurals_file)
       if $VERBOSE
         $stderr.puts 'Updating xliff file'
       end
-      send_request(master_file_for_locale_request(@xliff_file_id, file, override))
-      push_master_plurals(plurals_file, override) if not plurals_file.nil?
+      send_request(master_file_for_locale_request(@xliff_file_id, file))
+      push_master_plurals(plurals_file) if not plurals_file.nil?
     end
 
     def pull(locale)
