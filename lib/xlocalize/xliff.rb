@@ -77,5 +77,26 @@ module Xlocalize
           .gsub('\\\\n', '\n')
       end
     end
+
+    def merge_on_top_of(original_doc)
+      #original_doc = Nokogiri::XML(wti.pull(master_lang)['xliff'])
+      original_xliff = original_doc.at_css('xliff')
+      doc = self#Nokogiri::XML(File.open(master_file_name))
+      doc.xpath("//xmlns:file").each { |node|
+        fname = node["original"]
+        original_file = original_doc.at_css('file[original="' << fname << '"] > body')
+        if original_file then
+          node.css('body > trans-unit').each { |unit|
+            key = unit['id']
+            original_unit = original_file.at_css('trans-unit[id="' << key << '"]')
+            if !original_unit then
+              original_file << unit
+            end
+          }
+        else
+          original_xliff << node
+        end
+      }
+    end
   end
 end
