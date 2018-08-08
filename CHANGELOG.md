@@ -1,3 +1,7 @@
+## [v0.6.0](https://github.com/viktorasl/xlocalize/releases/tag/0.6.0)
+
+* [17ffefc](https://github.com/viktorasl/xlocalize/commit/17ffefcc94272385091cef087e7df18a407897a8) Xliff merging before upload
+
 ## [v0.5.0](https://github.com/viktorasl/xlocalize/releases/tag/0.5.0)
 
 * [cb03ba3](https://github.com/viktorasl/xlocalize/commit/cb03ba3a91c3b4218fd880b50c7b9f2fff113573) Translations import revamp
