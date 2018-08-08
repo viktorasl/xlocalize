@@ -37,7 +37,7 @@ describe Xlocalize::Executor do
       allow(File).to receive(:open).with('en.xliff').and_return(xliff)
       allow(File).to receive(:open).with('en.xliff', 'w').and_yield(export_file)
       Xlocalize::Executor.new.export_master(nil, 'Project.xcodeproj', ['Target'], '##', 'en', ['exclude_trans_unit', 'excl'])
-
+      
       files = Nokogiri::XML(export_file.string).xpath("//xmlns:file").map { |f| f['original'] }
       trans_units = Nokogiri::XML(export_file.string).xpath("//xmlns:trans-unit").map { |node| node['id'] }
       expect(files).to eq(['Target/en.lproj/should_exclude_some.strings'])
@@ -51,6 +51,9 @@ describe Xlocalize::Executor do
         def push_master(file, plurals_file)
           @push_xliff_file = file
           @push_plurals_file = plurals_file
+        end
+        def pull(locale)
+          { 'xliff' => Nokogiri::XML(open("en.xliff")).to_xml }
         end
       end
 

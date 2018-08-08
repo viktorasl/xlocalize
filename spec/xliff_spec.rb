@@ -114,4 +114,26 @@ describe Nokogiri::XML::Document do
       'Usual text'
     ])
   end
+
+  it 'merges xliff on to of other correctly' do
+    original_doc = Nokogiri::XML(File.open('spec/fixtures/en_org.xliff'))
+    doc = Nokogiri::XML(File.open('spec/fixtures/en.xliff'))
+    doc.merge_on_top_of(original_doc)
+
+    res = {}
+    original_doc.xpath('//xmlns:file').each do |f|
+      fname = f['original']
+      res[fname] = f.css('body > trans-unit').map { |u| u['id'] }
+    end
+
+    expect(res).to eq({
+      'ImportExportExample/en.lproj/only_singles.strings' => [
+        'some_other',
+        'only_single'
+      ],
+      'ImportExportExample/en.lproj/and_plurals.strings' => [
+        'only_other_single'
+      ]
+    })
+  end
 end

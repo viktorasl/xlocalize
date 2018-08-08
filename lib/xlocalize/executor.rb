@@ -37,6 +37,11 @@ module Xlocalize
       end
 
       purelyze(master_lang, targets, excl_prefix, project, filer_ui_duplicates=Helper.xcode_at_least?(9.3), exclude_units)
+      if wti then
+        original_doc = Nokogiri::XML(wti.pull(master_lang)['xliff'])
+        Nokogiri::XML(File.open(master_file_name)).merge_on_top_of(original_doc)
+        File.write(master_file_name, original_doc.to_xml)
+      end
       push_master_file(wti, master_lang, master_file_name) if !wti.nil?
     end
 
