@@ -139,7 +139,12 @@ describe Nokogiri::XML::Document do
 
   it 'recognizes cryptic translation units' do
     doc = Nokogiri::XML(File.open('spec/fixtures/cryptic.xliff'))
-    res = doc.cryptic_trans_units
+    exclude = {
+      'path/to/file/one.strings' => [
+        'u1e-bc-PkQ.text'
+      ]
+    }
+    res = doc.cryptic_trans_units(exclude)
     expected = {
       'path/to/file/one.strings' => [
         'IGC-8E-92j.normalTitle',
