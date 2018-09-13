@@ -38,9 +38,17 @@ module Xlocalize
 
       purelyze(master_lang, targets, excl_prefix, project, filer_ui_duplicates=Helper.xcode_at_least?(9.3), exclude_units)
       if no_cryptic then
+        config_fname = '.xlocalize.yml'
+        config = (YAML.load_file(config_fname) if File.file?(config_fname)) || {}
+        allow_cryptic = config['allow_cryptic'] || {}
+        
         doc = Nokogiri::XML(File.open(locale_file_name(master_lang)))
-        cryptic_trans_units = doc.cryptic_trans_units
-        raise "Found cryptic translation units" if !cryptic_trans_units.empty?
+        cryptic_trans_units = doc.cryptic_trans_units(allow_cryptic)
+        if !cryptic_trans_units.empty? then
+          err_msg = "Found cryptic translation units\n"
+          err_msg += cryptic_trans_units.map { |fname, units| "#{fname}" + "\n " + units.join("\n ") }.join("\n")
+          raise err_msg
+        end
       end
 
       if wti then
