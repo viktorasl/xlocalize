@@ -18,7 +18,7 @@ module Xlocalize
       return "#{locale}.xliff"
     end
 
-    def export_master(wti, project, targets, excl_prefix, master_lang, exclude_units=[])
+    def export_master(wti, project, targets, excl_prefix, master_lang, exclude_units=[], no_cryptic)
       master_file_name = locale_file_name(master_lang)
 
       File.delete(master_file_name) if File.exist?(master_file_name)
@@ -37,6 +37,20 @@ module Xlocalize
       end
 
       purelyze(master_lang, targets, excl_prefix, project, filer_ui_duplicates=Helper.xcode_at_least?(9.3), exclude_units)
+      if no_cryptic then
+        config_fname = '.xlocalize.yml'
+        config = (YAML.load_file(config_fname) if File.file?(config_fname)) || {}
+        allow_cryptic = config['allow_cryptic'] || {}
+        
+        doc = Nokogiri::XML(File.open(locale_file_name(master_lang)))
+        cryptic_trans_units = doc.cryptic_trans_units(allow_cryptic)
+        if !cryptic_trans_units.empty? then
+          err_msg = "Found cryptic translation units\n"
+          err_msg += cryptic_trans_units.map { |fname, units| "#{fname}" + "\n " + units.join("\n ") }.join("\n")
+          raise err_msg
+        end
+      end
+
       if wti then
         original_doc = Nokogiri::XML(wti.pull(master_lang)['xliff'])
         Nokogiri::XML(File.open(master_file_name)).merge_on_top_of(original_doc)
