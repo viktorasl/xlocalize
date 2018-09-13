@@ -136,4 +136,19 @@ describe Nokogiri::XML::Document do
       ]
     })
   end
+
+  it 'recognizes cryptic translation units' do
+    doc = Nokogiri::XML(File.open('spec/fixtures/cryptic.xliff'))
+    res = doc.cryptic_trans_units
+    expected = {
+      'path/to/file/one.strings' => [
+        'IGC-8E-92j.normalTitle',
+        '1cb-UY-NU3.placeholder'
+      ],
+      'path/to/file/three.strings' => [
+        'Smt-FL-NZb.text'
+      ]
+    }
+    expect(res).to eq(expected)
+  end
 end

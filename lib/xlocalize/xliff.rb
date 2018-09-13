@@ -98,5 +98,17 @@ module Xlocalize
         end
       }
     end
+
+    def cryptic_trans_units
+      file_units = {}
+      cryptic_pattern = /[a-zA-Z0-9]{3}-[a-zA-Z0-9]{2}-[a-zA-Z0-9]{3}/
+      self.xpath("//xmlns:file").each do |node|
+        fname = node["original"]
+        all_units = node.css('body > trans-unit').map { |unit| unit['id'] }
+        cryptic_units = all_units.select { |key| key =~ cryptic_pattern }
+        file_units[fname] = cryptic_units if cryptic_units.any?
+      end
+      return file_units
+    end
   end
 end
