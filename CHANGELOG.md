@@ -1,3 +1,7 @@
+## [v0.7.0](https://github.com/viktorasl/xlocalize/releases/tag/0.7.0)
+
+* [70ef86f](https://github.com/viktorasl/xlocalize/commit/70ef86f6d8b5d64e100445635a46d92080437646) Provide allowed cryptic units via config file
+
 ## [v0.6.0](https://github.com/viktorasl/xlocalize/releases/tag/0.6.0)
 
 * [17ffefc](https://github.com/viktorasl/xlocalize/commit/17ffefcc94272385091cef087e7df18a407897a8) Xliff merging before upload
