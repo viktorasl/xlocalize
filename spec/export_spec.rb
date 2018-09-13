@@ -36,7 +36,7 @@ describe Xlocalize::Executor do
       allow(Kernel).to receive(:system).with('xcodebuild -exportLocalizations -localizationPath ./ -project Project.xcodeproj')
       allow(File).to receive(:open).with('en.xliff').and_return(xliff)
       allow(File).to receive(:open).with('en.xliff', 'w').and_yield(export_file)
-      Xlocalize::Executor.new.export_master(nil, 'Project.xcodeproj', ['Target'], '##', 'en', ['exclude_trans_unit', 'excl'])
+      Xlocalize::Executor.new.export_master(nil, 'Project.xcodeproj', ['Target'], '##', 'en', ['exclude_trans_unit', 'excl'], false)
       
       files = Nokogiri::XML(export_file.string).xpath("//xmlns:file").map { |f| f['original'] }
       trans_units = Nokogiri::XML(export_file.string).xpath("//xmlns:trans-unit").map { |node| node['id'] }
@@ -59,7 +59,7 @@ describe Xlocalize::Executor do
 
       wti = WebtranslateItMock.new
       fixture_path = 'spec/fixtures/ImportExportExample/'
-      Xlocalize::Executor.new.export_master(wti, fixture_path << '/ImportExportExample.xcodeproj', ['ImportExportExample'], '##', 'en')
+      Xlocalize::Executor.new.export_master(wti, fixture_path << '/ImportExportExample.xcodeproj', ['ImportExportExample'], '##', 'en', false)
 
       it 'should create a YAML file for plurals in project' do
         plurals_yml = YAML.load_file('en.xliff_plurals.yml')
