@@ -1,3 +1,7 @@
+## [v0.7.1](https://github.com/viktorasl/xlocalize/releases/tag/0.7.1)
+
+* [b95facf](https://github.com/viktorasl/xlocalize/commit/b95facf23fedefc87080f2eac9b5ad2d62bb4d86) Use different {locale}.xliff path on Xcode 9 and Xcode 10
+
 ## [v0.7.0](https://github.com/viktorasl/xlocalize/releases/tag/0.7.0)
 
 * [70ef86f](https://github.com/viktorasl/xlocalize/commit/70ef86f6d8b5d64e100445635a46d92080437646) Provide allowed cryptic units via config file
