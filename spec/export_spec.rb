@@ -32,7 +32,9 @@ describe Xlocalize::Executor do
       export_file = StringIO.new
 
       allow(File).to receive(:exist?).and_return(false)
-      allow(Xlocalize::Helper).to receive(:xcode_at_least?).and_return(true)
+      allow(Xlocalize::Helper).to receive(:xcode_at_least?).with(9).and_return(true)
+      allow(Xlocalize::Helper).to receive(:xcode_at_least?).with(9.3).and_return(true)
+      allow(Xlocalize::Helper).to receive(:xcode_at_least?).with(10).and_return(false)
       allow(Kernel).to receive(:system).with('xcodebuild -exportLocalizations -localizationPath ./ -project Project.xcodeproj')
       allow(File).to receive(:open).with('en.xliff').and_return(xliff)
       allow(File).to receive(:open).with('en.xliff', 'w').and_yield(export_file)
