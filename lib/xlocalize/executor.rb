@@ -146,6 +146,12 @@ module Xlocalize
 
     def localized_filename(file_name, locale)
       parts = file_name.split('/')
+
+      # WebTranslateIt uses _ for Language_Country separator e.g. pt_PT
+      # but Xcode uses - e.g. pt-PT
+      # Repace it to match Xcode file locations
+      locale.sub!("_", "-")
+
       name = ""
       parts.each_with_index do |part, idx|
         name += "/" if idx > 0
